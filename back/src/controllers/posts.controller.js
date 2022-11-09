@@ -1,24 +1,31 @@
 import {getConn} from '../database/database';
-
-const fs=require('fs');
-
-function createJSON(name,content){
-    var arch=fs.writeFile(name+".json", content,(err)=>{
-        if(err){
-            console.log(err);
-        }
-        else{
-            console.log("JSON Created");
-        }
-    });
-}
-
 const getPosts = async (req,res) =>{
-    const query='SELECT ID,post_author,post_date,post_date_gmt,post_content,post_title,post_status,post_type FROM ds_posts';
+    const query=`SELECT ds_posts.ID,ds_posts.post_date,ds_posts.post_date_gmt,ds_posts.post_content,
+                ds_posts.post_title,ds_posts.post_status,ds_posts.post_type, ds_users.display_name
+                FROM ds_posts INNER JOIN ds_users ON ds_posts.post_author=ds_users.ID 
+                WHERE post_status = "publish" ORDER by (id) DESC LIMIT 50 `;
     try {
         const conn = await getConn();
         const result = await conn.query(query);
-        createJSON('all_news',JSON.stringify(result));
+        result.forEach(element => {
+            const cuerpo = element.post_content.toString();
+            const myArray = cuerpo.replace('<figure class="wp-block-video"><video controls src="', "VIDEO: ");
+            const myArray1 = myArray.replace('<img src="', "IMAGEN: ");
+            const idql = parseInt(element.ID);
+            const idmas1 = idql + 1;
+            const stringql = 'alt="" class="wp-image-'+ idmas1 + '"/>';
+            const myArray2 = myArray1.replace(stringql, "");
+            const myArray3 = myArray2.replace(/<!--(.*?)-->/gm, "");
+            const myArray4 = myArray3.replaceAll(/<(.|\n)*?>/gm, "");
+            const myArray5 = myArray4.replace('"></video></figure>', "");
+            const myArray6 = myArray5.replace('">', "");
+            const myArray7 = myArray6.replaceAll(/\n\n\n\n/gm, '\n');
+            const myArray8 = myArray7.replaceAll('\n', ' ');
+            const myArray9 = myArray8.replaceAll(/\"/gm, '');
+            const myArray10 = myArray9.replace('.jpg"', '.jpg');
+            console.log('String Creado y Guardado.');
+            element.post_content = myArray10;
+        });
         return res.json(result);
     } catch (error) {
         res.send(error.message);
@@ -27,12 +34,30 @@ const getPosts = async (req,res) =>{
 
 const getPost= async (req,res)=>{
     const { id }=req.params;
-    const query='SELECT ID,post_author,post_date,post_date_gmt,post_content,post_title,post_status,post_type FROM ds_posts WHERE id=?';
+    const query=`SELECT ds_posts.ID,ds_posts.post_date,ds_posts.post_date_gmt,ds_posts.post_content,
+                ds_posts.post_title,ds_posts.post_status,ds_posts.post_type, ds_users.display_name
+                FROM ds_posts INNER JOIN ds_users ON ds_posts.post_author=ds_users.ID WHERE ds_posts.ID=?`;
     try {
         const conn = await getConn();
         const result = await conn.query(query,id);
-        createJSON('new_id_'+id,JSON.stringify(result));
-        return res.json(result);
+        const cuerpo = result[0].post_content.toString();
+        const myArray = cuerpo.replace('<figure class="wp-block-video"><video controls src="', "VIDEO: ");
+        const myArray1 = myArray.replace('<img src="', "IMAGEN: ");
+        const idql = parseInt(result[0].ID);
+        const idmas1 = idql + 1;
+        const stringql = 'alt="" class="wp-image-'+ idmas1 + '"/>';
+        const myArray2 = myArray1.replace(stringql, "");
+        const myArray3 = myArray2.replace(/<!--(.*?)-->/gm, "");
+        const myArray4 = myArray3.replaceAll(/<(.|\n)*?>/gm, "");
+        const myArray5 = myArray4.replace('"></video></figure>', "");
+        const myArray6 = myArray5.replace('">', "");
+        const myArray7 = myArray6.replaceAll(/\n\n\n\n/gm, '\n');
+        const myArray8 = myArray7.replaceAll('\n', ' ');
+        const myArray9 = myArray8.replaceAll(/\"/gm, '');
+        const myArray10 = myArray9.replace('.jpg"', '.jpg');
+        console.log('String Creado y Guardado.');
+        result[0].post_content = myArray10;
+        return res.json(result[0]);
     } catch (error) {
         res.send(error.message);
     }
