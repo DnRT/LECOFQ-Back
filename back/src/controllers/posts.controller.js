@@ -23,7 +23,6 @@ const getPosts = async (req,res) =>{
             const myArray8 = myArray7.replaceAll('\n', ' ');
             const myArray9 = myArray8.replaceAll(/\"/gm, '');
             const myArray10 = myArray9.replace('.jpg"', '.jpg');
-            console.log('String Creado y Guardado.');
             element.post_content = myArray10;
         });
         return res.json(result);
