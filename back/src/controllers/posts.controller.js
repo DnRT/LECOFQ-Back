@@ -23,7 +23,16 @@ const getPosts = async (req,res) =>{
             const myArray8 = myArray7.replaceAll('\n', ' ');
             const myArray9 = myArray8.replaceAll(/\"/gm, '');
             const myArray10 = myArray9.replace('.jpg"', '.jpg');
-            element.post_content = myArray10;
+            const myArray11 = myArray10.split('IMAGEN: ');
+            if(myArray11[1]){
+                const myArray12 = myArray11[1].split(' ');
+                const myArray13 = myArray10.replace("IMAGEN: "+myArray11[1],'');
+                element.imagen=myArray12[0];
+                element.post_content = myArray13;
+            }
+            else{
+                element.post_content= myArray10;
+            }
         });
         return res.json(result);
     } catch (error) {
@@ -54,8 +63,12 @@ const getPost= async (req,res)=>{
         const myArray8 = myArray7.replaceAll('\n', ' ');
         const myArray9 = myArray8.replaceAll(/\"/gm, '');
         const myArray10 = myArray9.replace('.jpg"', '.jpg');
+        const myArray11 = myArray10.split('IMAGEN: ');
+        const myArray12 = myArray11[1].split(' ');
+        const myArray13 = myArray10.replace("IMAGEN: "+myArray11[1],'');
         console.log('String Creado y Guardado.');
-        result[0].post_content = myArray10;
+        result[0].imagen=myArray12[0];
+        result[0].post_content = myArray13;
         return res.json(result[0]);
     } catch (error) {
         res.send(error.message);
