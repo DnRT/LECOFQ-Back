@@ -3,7 +3,7 @@ const getPosts = async (req,res) =>{
     const query=`SELECT ds_posts.ID,ds_posts.post_date,ds_posts.post_date_gmt,ds_posts.post_content,
                 ds_posts.post_title,ds_posts.post_status,ds_posts.post_type, ds_users.display_name
                 FROM ds_posts INNER JOIN ds_users ON ds_posts.post_author=ds_users.ID 
-                WHERE post_status = "publish" ORDER by (id) DESC LIMIT 50 `;
+                WHERE post_status = "publish" and post_type = "post" ORDER by (id) DESC LIMIT 50 `;
     try {
         const conn = await getConn();
         const result = await conn.query(query);
@@ -23,15 +23,20 @@ const getPosts = async (req,res) =>{
             const myArray8 = myArray7.replaceAll('\n', ' ');
             const myArray9 = myArray8.replaceAll(/\"/gm, '');
             const myArray10 = myArray9.replace('.jpg"', '.jpg');
-            const myArray11 = myArray10.split('IMAGEN: ');
-            if(myArray11[1]){
+            if(myArray10.includes('IMAGEN: ')){
+                const myArray11 = myArray10.split('IMAGEN: ');
                 const myArray12 = myArray11[1].split(' ');
-                const myArray13 = myArray10.replace("IMAGEN: "+myArray11[1],'');
-                element.imagen=myArray12[0];
-                element.post_content = myArray13;
+                element.imagen = myArray12[0];
+                element.post_content = myArray11[0];
+            }
+            else if(myArray10.includes('VIDEO: ')){
+                const myArray11 = myArray10.split('VIDEO: ');
+                const myArray12 = myArray11[1].split(' ');
+                element.video = myArray12[0];
+                element.post_content = myArray11[0];
             }
             else{
-                element.post_content= myArray10;
+                element.post_content=myArray10;
             }
         });
         return res.json(result);
@@ -63,15 +68,20 @@ const getPost= async (req,res)=>{
         const myArray8 = myArray7.replaceAll('\n', ' ');
         const myArray9 = myArray8.replaceAll(/\"/gm, '');
         const myArray10 = myArray9.replace('.jpg"', '.jpg');
-        const myArray11 = myArray10.split('IMAGEN: ');
-        if(myArray11[1]){
+        if(myArray10.includes('IMAGEN: ')){
+            const myArray11 = myArray10.split('IMAGEN: ');
             const myArray12 = myArray11[1].split(' ');
-            const myArray13 = myArray10.replace("IMAGEN: "+myArray11[1],'');
-            result[0].imagen=myArray12[0];
-            result[0].post_content = myArray13;
+            result[0].imagen = myArray12[0];
+            result[0].post_content = myArray11[0];
+        }
+        else if(myArray10.includes('VIDEO: ')){
+            const myArray11 = myArray10.split('VIDEO: ');
+            const myArray12 = myArray11[1].split(' ');
+            result[0].video = myArray12[0];
+            result[0].post_content = myArray11[0];
         }
         else{
-            result[0].post_content= myArray10;
+            result[0].post_content=myArray10;
         }
         return res.json(result[0]);
     } catch (error) {
